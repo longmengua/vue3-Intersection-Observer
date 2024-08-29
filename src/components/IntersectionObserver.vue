@@ -4,6 +4,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 let observer: any = null
 const num = generateArray(0, 20)
 const isInUpdateStack = ref<Array<string>>([])
+const boxRefs = ref<HTMLElement[]>([])
 
 function callback(entries: IntersectionObserverEntry[]) {
   entries.forEach((entry) => {
@@ -47,7 +48,7 @@ onUnmounted(() => {
     <div>目前在更新列中有：「{{ isInUpdateStack.join(',') }}」</div>
     <div class="container">
       <div class="boxs">
-        <div class="box" v-for="item in num" :key="item">box#{{ item }}</div>
+        <div class="box" v-for="item in num" :key="item" ref="boxRefs">box#{{ item }}</div>
       </div>
     </div>
   </div>
