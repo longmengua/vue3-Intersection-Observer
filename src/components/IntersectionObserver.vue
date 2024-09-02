@@ -8,7 +8,7 @@ let inactivityTimer: number | null = null // Timer to detect inactivity
 
 function onInactivity() {
   // Function to call when isInUpdateStack is inactive for 300ms
-  console.log('No changes in isInUpdateStack for 300ms.')
+  alert('No changes in isInUpdateStack for 300ms.')
   // Add your desired function logic here
 }
 
