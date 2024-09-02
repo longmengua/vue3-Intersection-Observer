@@ -1,24 +1,53 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 
-let observer: any = null
+let observer: IntersectionObserver | null = null
 const num = generateArray(0, 20)
-const isInUpdateStack = ref<Array<number>>([])
-const boxRefs = ref<HTMLElement[]>([])
+const isInUpdateStack = ref<Array<string>>([])
+let inactivityTimer: number | null = null // Timer to detect inactivity
+
+function onInactivity() {
+  // Function to call when isInUpdateStack is inactive for 300ms
+  console.log('No changes in isInUpdateStack for 300ms.')
+  // Add your desired function logic here
+}
+
+function startInactivityTimer() {
+  // Clear the existing inactivity timer if it exists
+  if (inactivityTimer !== null) {
+    clearTimeout(inactivityTimer)
+  }
+
+  // Set a new inactivity timer for 300ms
+  inactivityTimer = setTimeout(() => {
+    onInactivity()
+  }, 300)
+}
+
+function updateStack(str: string, add: boolean) {
+  // Update the stack and start/reset the inactivity timer
+  if (add) {
+    if (!isInUpdateStack.value.includes(str)) {
+      isInUpdateStack.value.push(str)
+      startInactivityTimer() // Start or reset timer on update
+    }
+  } else {
+    const idx = isInUpdateStack.value.indexOf(str)
+    if (idx !== -1) {
+      isInUpdateStack.value.splice(idx, 1)
+      startInactivityTimer() // Start or reset timer on update
+    }
+  }
+}
 
 function callback(entries: IntersectionObserverEntry[]) {
+  // Handle each intersection entry and update the stack
   entries.forEach((entry) => {
-    // const index = Array.from(entry.target.parentElement!.children).indexOf(entry.target)
-    const index = parseInt((entry.target as HTMLElement).getAttribute('data-class-id') || '', 10)
+    const str = (entry.target as HTMLElement).getAttribute('data-class-id') ?? ''
     if (entry.isIntersecting) {
-      if (!isInUpdateStack.value.includes(index)) {
-        isInUpdateStack.value.push(index)
-      }
+      updateStack(str, true) // Add to stack
     } else {
-      const idx = isInUpdateStack.value.indexOf(index)
-      if (idx !== -1) {
-        isInUpdateStack.value.splice(idx, 1)
-      }
+      updateStack(str, false) // Remove from stack
     }
   })
 }
@@ -41,6 +70,10 @@ onUnmounted(() => {
   if (observer) {
     observer.disconnect()
   }
+  // Clear the inactivity timer when the component is unmounted
+  if (inactivityTimer !== null) {
+    clearTimeout(inactivityTimer)
+  }
 })
 </script>
 
@@ -49,13 +82,7 @@ onUnmounted(() => {
     <div>目前在更新列中有：「{{ isInUpdateStack.join(',') }}」</div>
     <div class="container">
       <div class="boxs">
-        <div
-          class="box"
-          :data-class-id="index"
-          v-for="(item, index) in num"
-          :key="index"
-          ref="boxRefs"
-        >
+        <div class="box" :data-class-id="index" v-for="(item, index) in num" :key="index">
           box#{{ index }}
         </div>
       </div>
