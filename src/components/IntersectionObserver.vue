@@ -3,20 +3,20 @@ import { onMounted, onUnmounted, ref } from 'vue'
 
 let observer: any = null
 const num = generateArray(0, 20)
-const isInUpdateStack = ref<Array<string>>([])
+const isInUpdateStack = ref<Array<number>>([])
 const boxRefs = ref<HTMLElement[]>([])
 
 function callback(entries: IntersectionObserverEntry[]) {
   entries.forEach((entry) => {
-    const boxNumber = (entry.target as HTMLElement).textContent?.match(/\d+/)?.[0] || ''
+    const index = Array.from(entry.target.parentElement!.children).indexOf(entry.target)
     if (entry.isIntersecting) {
-      if (!isInUpdateStack.value.includes(boxNumber)) {
-        isInUpdateStack.value.push(boxNumber)
+      if (!isInUpdateStack.value.includes(index)) {
+        isInUpdateStack.value.push(index)
       }
     } else {
-      const index = isInUpdateStack.value.indexOf(boxNumber)
-      if (index !== -1) {
-        isInUpdateStack.value.splice(index, 1)
+      const idx = isInUpdateStack.value.indexOf(index)
+      if (idx !== -1) {
+        isInUpdateStack.value.splice(idx, 1)
       }
     }
   })
@@ -48,7 +48,9 @@ onUnmounted(() => {
     <div>目前在更新列中有：「{{ isInUpdateStack.join(',') }}」</div>
     <div class="container">
       <div class="boxs">
-        <div class="box" v-for="item in num" :key="item" ref="boxRefs">box#{{ item }}</div>
+        <div class="box" v-for="(item, index) in num" :key="index" ref="boxRefs">
+          box#{{ index }}
+        </div>
       </div>
     </div>
   </div>
