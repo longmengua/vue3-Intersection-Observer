@@ -8,7 +8,8 @@ const boxRefs = ref<HTMLElement[]>([])
 
 function callback(entries: IntersectionObserverEntry[]) {
   entries.forEach((entry) => {
-    const index = Array.from(entry.target.parentElement!.children).indexOf(entry.target)
+    // const index = Array.from(entry.target.parentElement!.children).indexOf(entry.target)
+    const index = parseInt((entry.target as HTMLElement).getAttribute('data-class-id') || '', 10)
     if (entry.isIntersecting) {
       if (!isInUpdateStack.value.includes(index)) {
         isInUpdateStack.value.push(index)
@@ -48,7 +49,13 @@ onUnmounted(() => {
     <div>目前在更新列中有：「{{ isInUpdateStack.join(',') }}」</div>
     <div class="container">
       <div class="boxs">
-        <div class="box" v-for="(item, index) in num" :key="index" ref="boxRefs">
+        <div
+          class="box"
+          :data-class-id="index"
+          v-for="(item, index) in num"
+          :key="index"
+          ref="boxRefs"
+        >
           box#{{ index }}
         </div>
       </div>
